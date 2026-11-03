@@ -21,9 +21,9 @@ const HomePage = () => {
             <div className="d-flex gap-2 justify-content-center">
                 {/* onClick = ce qui se passe au clic : ici on change de page avec navigate */}
                 <button className="btn btn-primary btn-lg" onClick={()=>{ navigate("/events") }}>Voir les événements</button>
-                <button className="btn btn-outline-primary btn-lg" onClick={()=>{ navigate("/login") }}>Login</button>
+                <button className="btn btn-outline-primary btn-lg" onClick={()=>{ navigate("/login") }}>Se connecter</button>
                 {/* <button onClick={function(){}}>Login</button> */}
-                <button className="btn btn-outline-secondary btn-lg" onClick={()=>{ navigate("/register") }}>Register</button>
+                <button className="btn btn-outline-secondary btn-lg" onClick={()=>{ navigate("/register") }}>S'inscrire</button>
             </div>
         </div>
     </>;

@@ -13,14 +13,17 @@ import LoginPage from './Pages/LoginPage'
 import RegisterPage from './Pages/RegisterPage'
 import EventsPage from './Pages/EventsPage'
 import EventPage from './Pages/EventPage'
+import AuthContext from './Context/AuthContext'
+import ProfilePage from './Pages/ProfilePage'
+import { useState } from 'react'
 
 
 
 // Composant principal : c'est lui qui décide quelle page afficher selon l'URL
 function App() {
-
+  const [isConnected, setIsConnected] = useState(false)
   return (
-    <>
+    <AuthContext.Provider value={{ isConnected, setIsConnected }}>
       <BrowserRouter>
         {/* La NavBar est en dehors de <Routes> : elle s'affiche donc sur TOUTES les pages */}
         <NavBar />
@@ -35,11 +38,11 @@ function App() {
             <Route path='/events' element={<EventsPage />} />
             {/* ":id" = partie variable de l'URL (ex : /event/12), lue avec useParams() dans EventPage */}
             <Route path='/event/:id' element={<EventPage />} />
-
+            <Route path='/profile' element={<ProfilePage />} />
           </Routes>
         </main>
       </BrowserRouter>
-    </>
+    </AuthContext.Provider>
   )
 }
 

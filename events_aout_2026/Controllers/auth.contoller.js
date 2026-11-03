@@ -40,7 +40,7 @@ async function login(req, res) {
 
         const token = jwt.sign({
             user
-        },process.env.JWT_SECRET,{expiresIn : "1h"});
+        },process.env.JWT_SECRET,{expiresIn : "4h"});
 
         res.json({message : "Vous êtes bien connecté !", token});
     } catch (error) {

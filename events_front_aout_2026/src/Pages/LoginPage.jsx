@@ -1,7 +1,12 @@
 // useState : permet de stocker des données qui peuvent changer (ici ce que l'utilisateur tape)
-import { useState } from "react";
+// useContext : permet de lire le Context (l'info partagée entre toutes les pages)
+import { useContext, useState } from "react";
+// useNavigate : permet de changer de page depuis le code
+import { useNavigate } from "react-router";
 // Le service qui envoie les demandes de connexion/inscription au back
 import authServices from "../Services/authServices";
+// Le Context qui contient l'info "connecté ou pas"
+import AuthContext from "../Context/AuthContext";
 
 // Page de connexion, affichée sur l'adresse "/login"
 const LoginPage = () => {
@@ -13,6 +18,9 @@ const LoginPage = () => {
         password: ""
     })
 
+    const [feedback, setFeedback] = useState(null)
+    const navigate = useNavigate();
+    const { setIsConnected } = useContext(AuthContext);
     // TRAITEMENTS
     // Appelée à CHAQUE lettre tapée dans un champ du formulaire
     // "e" (l'événement) contient des infos sur le champ qui a changé
@@ -37,9 +45,25 @@ const LoginPage = () => {
             // On range le token dans le navigateur (localStorage) pour le réutiliser plus tard
             // (par exemple dans eventsServices pour voir les événements)
             window.localStorage.setItem("token",token)
+            // On met à jour l'état de connexion
+            setIsConnected(true);
+            // On affiche un message de réussite
+            setFeedback("Connexion réussie ! Redirection vers la page d'accueil...");
+            // On redirige vers la page d'accueil après 1,5 seconde (1500 millisecondes)
+            // pour laisser le temps de lire le message
+            setTimeout(() => {
+                navigate("/");
+            }, 1500);
         } catch (error) {
             // Si ça échoue (mauvais mot de passe, back éteint...), on affiche l'erreur dans la console
             console.error(error);
+            // CONDITION : si le back a répondu, on affiche son message (ex : "Identifiants incorrect")
+            // Sinon (back éteint), error.response n'existe pas : on affiche un message général
+            if (error.response) {
+                setFeedback("Erreur de connexion : " + error.response.data.error);
+            } else {
+                setFeedback("Erreur de connexion : le serveur ne répond pas");
+            }
         }
     }
 
@@ -52,6 +76,8 @@ const LoginPage = () => {
                 <div className="card shadow-sm">
                     <div className="card-body p-4">
                         <h1 className="h3 mb-4 text-center">Connexion</h1>
+                        {/* CONDITION : s'il y a un message (feedback), on l'affiche dans un encadré */}
+                        {feedback && <div className="alert alert-info">{feedback}</div>}
                         {/* onSubmit : lance handleSubmit quand on envoie le formulaire */}
                         <form onSubmit={handleSubmit}>
                             <div className="mb-3">
