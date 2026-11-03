@@ -30,14 +30,27 @@ const LoginPage = () => {
 
     // Rendu
     return <>
-        <form onSubmit={handleSubmit}>
-            <label htmlFor="username">Login</label>
-            <input type="text" name="username" id="username" value={user.username} onChange={handleChange}/>
-            <label htmlFor="password">Mot de passe</label>
-            <input type="password" id="password" name="password" value={user.password} onChange={handleChange}/>
-            <button type="submit">Se Connecter</button>
-        </form>
+        <div className="row justify-content-center">
+            <div className="col-md-6 col-lg-4">
+                <div className="card shadow-sm">
+                    <div className="card-body p-4">
+                        <h1 className="h3 mb-4 text-center">Connexion</h1>
+                        <form onSubmit={handleSubmit}>
+                            <div className="mb-3">
+                                <label htmlFor="username" className="form-label">Login</label>
+                                <input type="text" className="form-control" name="username" id="username" value={user.username} onChange={handleChange}/>
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="password" className="form-label">Mot de passe</label>
+                                <input type="password" className="form-control" id="password" name="password" value={user.password} onChange={handleChange}/>
+                            </div>
+                            <button type="submit" className="btn btn-primary w-100">Se Connecter</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </>;
 }
- 
+
 export default LoginPage;
