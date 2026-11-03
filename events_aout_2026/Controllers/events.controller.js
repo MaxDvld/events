@@ -7,6 +7,7 @@ async function getAll(req, res) {
         const events = await eventModel.getAll();
         res.json(events);
     } catch (error) {
+        console.error(error)
         res.status(500).json({ error: "Une erreur est survenue lors de la récupération des events !" })
     }
 }
@@ -24,6 +25,7 @@ async function getById(req, res) {
         event.participants = participants;
         res.json(event);
     } catch (error) {
+        console.error(error)
         res.status(500).json({ error: "Une erreur est survenue lors de la récupération de l'event !" })
     }
 }
@@ -55,6 +57,7 @@ async function update(req, res) {
         const updated = await eventModel.update(id, event);
         res.json({ message: "Votre modification à bien été effetctué", event });
     } catch (error) {
+        console.error(error)
         res.status(500).json({ error: "Une erreur est survenue lors de la modification de l'event !" })
     }
 }
@@ -67,6 +70,7 @@ async function insert(req, res) {
         const inserted = await eventModel.insert(body);
         res.status(201).json({ message: "Votre insertion à bien été effectué", event: body });
     } catch (error) {
+        console.error(error)
         res.status(500).json({ error: "Une erreur est survenue lors de l'insertion de l'event !" })
     }
 }
@@ -80,6 +84,7 @@ async function deleteevent(req, res) {
         const deleted = await eventModel.deleteevent(id);
         res.json({message : "Votre suppression à bien été effectué", event});
     } catch (error) {
+        console.error(error)
         res.status(500).json({ error: "Une erreur est survenue lors de la suppression de l'event !" })
     }
 }

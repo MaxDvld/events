@@ -3,7 +3,8 @@ import Db from '../Config/db.js'
 async function getAll() {
     const [rows] = await Db.query(`SELECT ev_id, ev_title, ev_description, ev_date, ev_location, ev_owner, us_username 
         FROM events
-        INNER JOIN users ON us_id = ev_owner`);
+        INNER JOIN users ON us_id = ev_owner
+        ORDER BY ev_date`);
     return rows;
 }
 
