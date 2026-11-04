@@ -1,44 +1,72 @@
-import { jwtDecode } from "jwt-decode";
 import { useState, useEffect } from "react";
 import usersServices from "../Services/usersServices";
 
 const ProfilePage = () => {
     // VARIABLES
-    const token = window.localStorage.getItem("token");
-    const decodedToken = jwtDecode(token);
     const [user, setUser] = useState({})
-    console.log(decodedToken);
-    // TRAITEMENTS
-const fetchUserById = async () => {
-    // try = "essaie de faire ça"...
-    try {
-        // On demande au back l'utilisateur qui a cet id
-        // "await" = on attend la réponse avant de passer à la ligne suivante
-        const response = await usersServices.getById(decodedToken.user.us_id)
-        // On range l'utilisateur reçu dans "user" : la page se met à jour toute seule
-        setUser(response.data)
-        // ... catch = "si ça plante, fais plutôt ça"
-    } catch (error) {
-        // On affiche l'erreur dans la console pour comprendre ce qui n'a pas marché
-        console.error("Erreur lors de la récupération de l'utilisateur :", error);
+    const [changePassword, setChangePassword] = useState({
+        old_password: "",
+        new_password: "",
+        confirm_password: ""
+    });
+
+    // Appelée à CHAQUE lettre tapée dans un champ du formulaire de mot de passe
+    const handleChange = (e) => {
+        // name = le nom du champ modifié, value = ce qui est écrit dedans
+        const {name, value} = e.target;
+        // "...changePassword" recopie les anciennes valeurs, puis on remplace seulement le champ modifié
+        setChangePassword({...changePassword, [name] : value})
     }
-};
 
-// useEffect lance fetchUserById quand la page s'affiche
-useEffect(() => {
-    fetchUserById();
-}, []);
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await usersServices.resetPassword(changePassword);
+            console.log(response);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const fetchMe = async () => {
+        try {
+            const response = await usersServices.getMe();
+            setUser(response.data);
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
 
+
+    useEffect(() => {
+        fetchMe();
+    }, []);
     // RENDU
     return <>
-        <h1>Mon profil</h1>
-        {decodedToken && (
-            <div>
-               <p>Nom d'utilisateur : {user.us_username}</p>
-                <p>Email : {user.us_email}</p>
-            </div>
-        )}
+        <h1> {user.us_username} </h1>
+        <h2> {user.us_email}</h2>
+        <h3>Commentaires</h3>
+        {/* CONDITION "? :" = "s'il y a des commentaires ? alors la liste : sinon un message" */}
+        {user.comments && user.comments.length > 0 ? user.comments.map((comment) => {
+            return <li key={comment.co_id}>{comment.co_comment}</li>
+        }) : "Pas de commentaire"}
+        <h3>Participations</h3>
+        {user.events && user.events.length > 0 ? user.events.map((event) => {
+            return <li key={event.ev_id}>{event.ev_title}</li>
+        }) : "Pas d'inscription active ! "}
+
+        {/* Formulaire pour changer de mot de passe (pas encore relié au back) */}
+        <form onSubmit={handleSubmit}>
+            <label htmlFor="old_password">Ancien mot de passe</label>
+            <input type="password" id="old_password" name="old_password" onChange={handleChange} value={changePassword.old_password} />
+            <label htmlFor="new_password">Nouveau mot de passe</label>
+            <input type="password" id="new_password" name="new_password" onChange={handleChange} value={changePassword.new_password} />
+            <label htmlFor="confirm_password">Confirmer mot de passe</label>
+            <input type="password" id="confirm_password" name="confirm_password" onChange={handleChange} value={changePassword.confirm_password} />
+            {/* type="submit" : cliquer ce bouton envoie le formulaire */}
+            <input type="submit" value="Valider" />
+        </form>
     </>;
 }
 

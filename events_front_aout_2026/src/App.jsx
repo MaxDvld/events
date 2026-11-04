@@ -21,7 +21,7 @@ import { useState } from 'react'
 
 // Composant principal : c'est lui qui décide quelle page afficher selon l'URL
 function App() {
-  const [isConnected, setIsConnected] = useState(false)
+  const [isConnected, setIsConnected] = useState(window.localStorage.getItem('token') !== null)
   return (
     <AuthContext.Provider value={{ isConnected, setIsConnected }}>
       <BrowserRouter>
