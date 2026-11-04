@@ -5,20 +5,30 @@ import axios from "axios";
 // Envoie le username et le mot de passe au back pour se connecter
 // Requête POST (= on envoie des données) sur /auth/login
 // Si c'est bon, le back répond avec un token
-function login(user){
+function login(user) {
     return axios.post("http://127.0.0.1:3000/auth/login", user)
 }
 
 // Envoie les infos du formulaire d'inscription au back pour créer un compte
 // Requête POST sur /auth/register
-function register(user){
+function register(user) {
     return axios.post("http://127.0.0.1:3000/auth/register", user)
 
 }
 
+function isConnected() {
+    const token = window.localStorage.getItem("token");
+    if (token) {
+        return true;
+    } else {
+        return false;
+    }
+
+}
 // On exporte les fonctions pour les utiliser dans LoginPage et RegisterPage
 // Exemple : authServices.login(user)
 export default {
     login,
-    register
+    register,
+    isConnected,
 }

@@ -16,13 +16,17 @@ import EventPage from './Pages/EventPage'
 import AuthContext from './Context/AuthContext'
 import ProfilePage from './Pages/ProfilePage'
 import { useState } from 'react'
-
+// Le service d'authentification (contient isConnected : "y a-t-il un token ?")
+import authServices from './Services/authServices'
+import AuthWrapper from './Wrappers/AuthWrapper'
 
 
 // Composant principal : c'est lui qui décide quelle page afficher selon l'URL
 function App() {
-  const [isConnected, setIsConnected] = useState(window.localStorage.getItem('token') !== null)
+  const [isConnected, setIsConnected] = useState(authServices.isConnected());
   return (
+
+    
     <AuthContext.Provider value={{ isConnected, setIsConnected }}>
       <BrowserRouter>
         {/* La NavBar est en dehors de <Routes> : elle s'affiche donc sur TOUTES les pages */}
@@ -35,10 +39,10 @@ function App() {
             <Route path='/' element={<HomePage />} />
             <Route path='/login' element={<LoginPage />} />
             <Route path='/register' element={<RegisterPage />} />
-            <Route path='/events' element={<EventsPage />} />
+            <Route path='/events' element={<AuthWrapper><EventsPage /></AuthWrapper>} />
             {/* ":id" = partie variable de l'URL (ex : /event/12), lue avec useParams() dans EventPage */}
-            <Route path='/event/:id' element={<EventPage />} />
-            <Route path='/profile' element={<ProfilePage />} />
+            <Route path='/event/:id' element={<AuthWrapper><EventPage /></AuthWrapper>} />
+            <Route path='/profile' element={<AuthWrapper><ProfilePage /></AuthWrapper>} />
           </Routes>
         </main>
       </BrowserRouter>

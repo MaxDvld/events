@@ -148,10 +148,10 @@ function NavBar() {
               </>}
               {/* CONDITION : si on n'est PAS connecté, on affiche "Connexion" et "Inscription" */}
               {isConnected == false && <>
-                <MenuItem onClick={() => goTo("/login")}>
+                <MenuItem onClick={() => { handleCloseNavMenu(); navigate("/login") }}>
                   <Typography sx={{ textAlign: 'center' }}>Connexion</Typography>
                 </MenuItem>
-                <MenuItem onClick={() => goTo("/register")}>
+                <MenuItem onClick={() => { handleCloseNavMenu(); navigate("/register") }}>
                   <Typography sx={{ textAlign: 'center' }}>Inscription</Typography>
                 </MenuItem>
               </>}
@@ -207,7 +207,6 @@ function NavBar() {
               <Button onClick={() => navigate("/register")} sx={{ my: 2, color: 'white', display: 'block' }}>
                 Inscription
               </Button>
-
             </>}
           </Box>
           {/* ===== 🖥️ 4. FIN Liens version ORDINATEUR ===== */}
