@@ -7,7 +7,7 @@ import { useNavigate } from "react-router";
 import authServices from "../Services/authServices";
 // Le Context qui contient l'info "connecté ou pas"
 import AuthContext from "../Context/AuthContext";
-
+import axios from "axios";
 // Page de connexion, affichée sur l'adresse "/login"
 const LoginPage = () => {
     // VARIABLES
@@ -45,6 +45,7 @@ const LoginPage = () => {
             // On range le token dans le navigateur (localStorage) pour le réutiliser plus tard
             // (par exemple dans eventsServices pour voir les événements)
             window.localStorage.setItem("token",token)
+            axios.defaults.headers["Authorization"] = "Bearer " + token;
             // On met à jour l'état de connexion
             setIsConnected(true);
             // On affiche un message de réussite
