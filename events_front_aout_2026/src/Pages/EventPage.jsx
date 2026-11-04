@@ -35,6 +35,11 @@ const EventPage = () => {
     // navigate sert à changer de page (bouton "Retour aux événements")
     const navigate = useNavigate()
 
+    const token = window.localStorage.getItem("token")
+    const myId = jwtDecode(token).user.us_id 
+
+    const isParticipant = event.participants && event.participants.some(participant => participant.us_id === myId) 
+
     // Fonction qui va chercher UN événement précis auprès du back, grâce à son id
     // "async" = la fonction doit attendre une réponse du serveur (ça prend un peu de temps)
     const fetchEventById = async () => {
@@ -54,13 +59,8 @@ const EventPage = () => {
     // Inscrit l'utilisateur connecté à cet événement
     const particip = async () => {
         try {
-            // On lit le token et on l'ouvre pour trouver notre id
-            const token = window.localStorage.getItem("token");
-            const decodeToken = jwtDecode(token)
-
             // L'objet attendu par le back : { user, event }
             const participant = {
-                user: decodeToken.user.us_id,   // QUI participe ? => dans le token
                 event: id                       // À QUEL événement ? => dans l'URL (useParams)
             }
             await participantsServices.insertParticipant(participant)
@@ -68,6 +68,15 @@ const EventPage = () => {
             fetchEventById()
         } catch (error) {
             console.error("Erreur lors de l'ajout du participant :", error);
+        }
+    }
+
+    const unParticip = async () => {
+        try {
+            await participantsServices.deleteParticipant(id)
+            fetchEventById()
+        } catch (error){
+            console.error("Erreur lors de la désincription", error)
         }
     }
 
@@ -122,10 +131,15 @@ const EventPage = () => {
                 {/* CONDITION : on affiche le nombre de participants seulement s'il y a la liste */}
                 Participants {event.participants && `(${event.participants.length})`}
             </Typography>
+            {isParticipant ? (
+           <Button onClick={unParticip} variant="outlined" color="error" sx={{ mb: 2 }}>
+                Se désinscrire 
+            </Button>
+            ) : (
             <Button onClick={particip} variant="contained" color="primary" sx={{ mb: 2 }}>
                 Participer à cet événement
             </Button>
-
+            )}
 
             {/* Box avec flexWrap : les participants passent à la ligne s'il n'y a plus de place */}
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 3 }}>

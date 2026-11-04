@@ -31,12 +31,17 @@ async function getByEventID(req, res) {
 
 async function insert(req, res) {
     try {
-        const body = req.body;
-        if(!body.user || !body.event){
+        // On construit nous-mêmes l'objet envoyé au model :
+        const participant = {
+            user : req.user.us_id,    // QUI ? => l'utilisateur connecté, rangé par le videur (token vérifié)
+            event : req.body.event    // À QUOI ? => choisi par le front, c'est normal
+        }
+        // CONDITION : seul l'événement peut manquer (user est garanti par le token)
+        if (!participant.event) {
             return res.status(403).json({error : "Tout les champs sont obligatoires !"})
         }
-        const inserted = await participantModel.insert(body);
-        res.status(201).json({message : "Votre insertion à bien été effectué", participant : body})
+        const inserted = await participantModel.insert(participant);
+        res.status(201).json({message : "Votre insertion à bien été effectué", participant : participant})
     } catch (error) {
         res.status(500).json({ error: "Une erreur est survenur lors de l'insertion du participant" })
     }
@@ -44,7 +49,7 @@ async function insert(req, res) {
 
 async function deleteParticipant(req, res) {
     try {
-        const userID = req.params.userID;
+        const userID = req.user.us_id;  // QUI ? => l'utilisateur connecté, rangé par le videur (token vérifié)
         const eventID = req.params.eventID;
         const deleted = await participantModel.deleteParticipant(userID, eventID);
         res.json({message : "Votre suppression à bien été effectué", participant : {user : userID, event :eventID}})
@@ -59,4 +64,5 @@ export default {
     getByUserID,
     insert,
     deleteParticipant
+    
 }
