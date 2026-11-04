@@ -1,6 +1,6 @@
 import axios from "axios";
 
-function getUserById(id) {
+function getById(id) {
     return axios.get("http://127.0.0.1:3000/users/" + id, {
         headers : {
             // On envoie le token (le "badge" reçu à la connexion) pour prouver qu'on est connecté
@@ -11,4 +11,7 @@ function getUserById(id) {
 }
 
 
-export default getUserById;
+export default {
+    getById,
+    
+}
