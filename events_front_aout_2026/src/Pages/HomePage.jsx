@@ -14,10 +14,10 @@ const HomePage = () => {
     const { isConnected } = useContext(AuthContext);
 
 
-    // TRAITEMENTS (Functions)
+    // TRAITEMENTS
 
 
-    // Rendu (Affichage pour l'utilisateur)
+    // RENDU
     return <>
         {/* Grand bloc blanc centré (classes Bootstrap) */}
         <div className="p-5 bg-white rounded-3 shadow-sm text-center">

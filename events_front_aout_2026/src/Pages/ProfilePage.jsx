@@ -17,6 +17,7 @@ const ProfilePage = () => {
         confirm_password: ""
     });
 
+    // TRAITEMENTS
     // Appelée à CHAQUE lettre tapée dans un champ du formulaire de mot de passe
     const handleChange = (e) => {
         // name = le nom du champ modifié, value = ce qui est écrit dedans
@@ -111,5 +112,5 @@ const ProfilePage = () => {
 }
 
 
-// Rendu JSX : ce qui s'affiche à l'écran
+// On exporte la page pour l'utiliser dans App.jsx
 export default ProfilePage;

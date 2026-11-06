@@ -19,13 +19,18 @@ import { useState } from 'react'
 // Le service d'authentification (contient isConnected : "y a-t-il un token ?")
 import authServices from './Services/authServices'
 import AuthWrapper from './Wrappers/AuthWrapper'
+import CreateEventPage from './Pages/CreateEventPage'
 
 
 // Composant principal : c'est lui qui décide quelle page afficher selon l'URL
 function App() {
+  // VARIABLES
+  // Connecté ou pas ? (true si un token valide existe déjà, même après F5)
   const [isConnected, setIsConnected] = useState(authServices.isConnected());
   // L'utilisateur connecté (lu dans le token), ou null si personne n'est connecté
   const [user, setUser] = useState(authServices.getUser());
+
+  // RENDU
   return (
 
 
@@ -45,6 +50,7 @@ function App() {
             {/* ":id" = partie variable de l'URL (ex : /event/12), lue avec useParams() dans EventPage */}
             <Route path='/event/:id' element={<AuthWrapper><EventPage /></AuthWrapper>} />
             <Route path='/profile' element={<AuthWrapper><ProfilePage /></AuthWrapper>} />
+            <Route path='/create' element={<AuthWrapper><CreateEventPage/></AuthWrapper>} />
           </Routes>
         </main>
       </BrowserRouter>

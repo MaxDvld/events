@@ -16,10 +16,14 @@ function getById(id) {
     return axios.get(API_URL + "/events/" + id)
 }
 
+function insertEvent(event){
+    return axios.post(API_URL + "/events/", event)
+}
 // On exporte les fonctions pour pouvoir les utiliser dans les pages
 // Exemple : eventsServices.getAll() dans EventsPage.jsx
 export default {
     getAll,
-    getById
+    getById,
+    insertEvent,
 }
 

@@ -21,12 +21,13 @@ import eventsServices from "../Services/eventsServices"
 
 // Composant page qui affiche la liste des événements
 const EventsPage = () => {
-
+    // VARIABLES
     // État local contenant la liste des événements (tableau vide au départ)
     const [events, setEvents] = useState([])
     // navigate sert à changer de page depuis le code (utilisé par le bouton "Voir les détails")
     const navigate = useNavigate()
 
+    // TRAITEMENTS
     // Récupère les événements depuis l'API
     const fetchEvents = async () => {
         try {
@@ -44,16 +45,21 @@ const EventsPage = () => {
 
     // Le tableau de dépendances vide [] fait que fetchEvents n'est appelé qu'une seule fois,
     // au premier affichage du composant
-    useEffect(()  =>{
+    useEffect(() => {
         fetchEvents()
     }, [])
 
-    // Rendu JSX de la page
+    // RENDU
     return <>
         {/* Titre de la page (variant = taille du texte, gutterBottom = espace en dessous) */}
         <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
             Pages des événements
         </Typography>
+        {/* Bouton pour aller sur la page de création */}
+        <Button variant="contained" onClick={() => navigate("/create")} sx={{ mb: 3 }}>
+            Créer un événement
+        </Button>
+
 
         {/* CONDITION : s'il n'y a aucun événement, on affiche un message */}
         {events.length === 0 && <Alert severity="info">Aucun événement à afficher.</Alert>}
@@ -104,7 +110,7 @@ const EventsPage = () => {
                     {/* Zone des boutons, en bas de la carte */}
                     <CardActions>
                         {/* Le bouton envoie vers la page de détail, ex : /event/12 */}
-                        <Button size="small" variant="contained" onClick={() => navigate("/event/"+event.ev_id)}>
+                        <Button size="small" variant="contained" onClick={() => navigate("/event/" + event.ev_id)}>
                             Voir les détails
                         </Button>
                     </CardActions>

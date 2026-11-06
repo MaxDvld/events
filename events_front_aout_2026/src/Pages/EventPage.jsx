@@ -31,6 +31,7 @@ import commentsServices from "../Services/commentsServices"
 // Composant page qui affiche le détail d'un seul événement
 // Il s'affiche quand on va sur "/event/12" par exemple (voir la route dans App.jsx)
 const EventPage = () => {
+    // VARIABLES
     // On récupère l'id de l'événement depuis l'URL
     // Exemple : sur "/event/12", id vaut "12"
     const { id } = useParams()
@@ -50,6 +51,7 @@ const EventPage = () => {
     // L'utilisateur connecté, partagé par le Context (rangé dans App.jsx grâce à authServices.getUser)
     const { user } = useContext(AuthContext)
 
+    // TRAITEMENTS
     // Fonction qui va chercher UN événement précis auprès du back, grâce à son id
     // "async" = la fonction doit attendre une réponse du serveur (ça prend un peu de temps)
     const fetchEventById = async () => {
@@ -149,6 +151,7 @@ const EventPage = () => {
         fetchEventById();
     }, [id]);
 
+    // RENDU
     // CONDITION 1 : on attend encore le back => un rond de chargement
     if (loading) {
         return <CircularProgress />

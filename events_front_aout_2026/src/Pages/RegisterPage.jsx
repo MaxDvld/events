@@ -5,7 +5,7 @@ import authServices from "../Services/authServices";
 
 // Page d'inscription, affichée sur l'adresse "/register"
 const  RegisterPage= () => {
-    // Variables
+    // VARIABLES
     // "user" contient tout ce que l'utilisateur tape dans le formulaire (vide au départ)
     const [user, setUser] = useState ({
         username : "",
@@ -14,7 +14,7 @@ const  RegisterPage= () => {
         confirm_password : ""
     })
 
-    // Traitements
+    // TRAITEMENTS
     // Appelée à CHAQUE lettre tapée dans un champ (même principe que dans LoginPage)
       const handleChange = (e) => {
         // const name = e.target.name;
@@ -47,7 +47,7 @@ const  RegisterPage= () => {
         }
 
 
-    // Rendu
+    // RENDU
     return <>
     {/* Les classes Bootstrap centrent la carte au milieu de la page */}
     <div className="row justify-content-center">

@@ -25,6 +25,7 @@ import AuthContext from '../Context/AuthContext';
 
 // Composant de la barre de navigation, affiché en haut de toutes les pages (voir App.jsx)
 function NavBar() {
+  // VARIABLES
   // anchorElNav : le menu mobile (☰) est-il ouvert ? (null = fermé)
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   // anchorElUser : le menu de l'avatar est-il ouvert ? (null = fermé)
@@ -33,6 +34,8 @@ function NavBar() {
   const navigate = useNavigate();
   // On lit dans le Context si l'utilisateur est connecté (true) ou pas (false)
   const { isConnected, setIsConnected, setUser } = useContext(AuthContext);
+
+  // TRAITEMENTS
   // Ouvre le menu mobile (☰)
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -69,6 +72,7 @@ function NavBar() {
     navigate("/");
   }
 
+  // RENDU
   return (
     <AppBar position="static">
       <Container maxWidth="xl">

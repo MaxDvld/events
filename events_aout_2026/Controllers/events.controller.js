@@ -63,12 +63,20 @@ async function update(req, res) {
 }
 async function insert(req, res) {
     try {
-        const body = req.body;
-        if (!body.title) {
-            res.status(403).json({ error: "Le titre est obligatoire" })
+        const event = {
+            title: req.body.title,
+            description: req.body.description,
+            date: req.body.date,
+            location: req.body.location,
+            owner: req.user.us_id
+            // QUI crée l'événement ? 🔐
         }
-        const inserted = await eventModel.insert(body);
-        res.status(201).json({ message: "Votre insertion à bien été effectué", event: body });
+        if (!event.title) {
+            return res.status(403).json({ error: "Veuillez écrire un évenement" })
+        }
+
+        const inserted = await eventModel.insert(event);
+        res.status(201).json({ message: "Votre insertion à bien été effectué", event: event });
     } catch (error) {
         console.error(error)
         res.status(500).json({ error: "Une erreur est survenue lors de l'insertion de l'event !" })
@@ -82,7 +90,7 @@ async function deleteevent(req, res) {
             return res.status(404).json({ error: "L'event n'existe pas !" })
         }
         const deleted = await eventModel.deleteevent(id);
-        res.json({message : "Votre suppression à bien été effectué", event});
+        res.json({ message: "Votre suppression à bien été effectué", event });
     } catch (error) {
         console.error(error)
         res.status(500).json({ error: "Une erreur est survenue lors de la suppression de l'event !" })

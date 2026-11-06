@@ -73,7 +73,7 @@ const LoginPage = () => {
     }
 
 
-    // Rendu
+    // RENDU
     return <>
         {/* Les classes Bootstrap centrent la carte au milieu de la page */}
         <div className="row justify-content-center">
