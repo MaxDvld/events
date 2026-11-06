@@ -2,8 +2,11 @@
 // useNavigate : permet de changer de page depuis le code (pour le bouton "Retour")
 import { useParams, useNavigate } from "react-router"
 // useEffect : permet de lancer du code automatiquement quand la page s'affiche
-import { useEffect, useState } from "react"
-import { jwtDecode } from "jwt-decode"
+// useContext : permet de lire le Context (ici l'utilisateur connecté)
+import { useContext, useEffect, useState } from "react"
+import AuthContext from "../Context/AuthContext"
+import Alert from "@mui/material/Alert"
+import CircularProgress from "@mui/material/CircularProgress"
 // Composants tout prêts de Material UI (MUI) pour le style
 import Box from "@mui/material/Box"
 import Paper from "@mui/material/Paper"
@@ -23,6 +26,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack"
 // Le service : c'est lui qui envoie les demandes au back (au serveur)
 import eventsServices from "../Services/eventsServices"
 import participantsServices from "../Services/participantsServices"
+import commentsServices from "../Services/commentsServices"
 
 // Composant page qui affiche le détail d'un seul événement
 // Il s'affiche quand on va sur "/event/12" par exemple (voir la route dans App.jsx)
@@ -30,15 +34,21 @@ const EventPage = () => {
     // On récupère l'id de l'événement depuis l'URL
     // Exemple : sur "/event/12", id vaut "12"
     const { id } = useParams()
-    // "event" contient l'événement reçu du back (objet vide au départ)
-    const [event, setEvent] = useState({})
     // navigate sert à changer de page (bouton "Retour aux événements")
     const navigate = useNavigate()
-
-    const token = window.localStorage.getItem("token")
-    const myId = jwtDecode(token).user.us_id 
-
-    const isParticipant = event.participants && event.participants.some(participant => participant.us_id === myId) 
+    // null au début : on ne sait pas encore si l'événement existe. [] serait une liste, pas un objet.
+    const [event, setEvent] = useState(null)
+    // loading = "est-ce qu'on attend encore la réponse du back ?" (true au départ)
+    const [loading, setLoading] = useState(true)
+    // error = le message à afficher si quelque chose a planté ("" = pas d'erreur)
+    const [error, setError] = useState("")
+    // Est-ce que je participe déjà ? (false au départ, mis à jour dans fetchEventById)
+    const [isParticipe, setIsParticipe] = useState(false)
+    const [newComment, setNewComment] = useState({
+        comment: ""
+    })
+    // L'utilisateur connecté, partagé par le Context (rangé dans App.jsx grâce à authServices.getUser)
+    const { user } = useContext(AuthContext)
 
     // Fonction qui va chercher UN événement précis auprès du back, grâce à son id
     // "async" = la fonction doit attendre une réponse du serveur (ça prend un peu de temps)
@@ -48,12 +58,37 @@ const EventPage = () => {
             // On demande au back l'événement qui a cet id
             // "await" = on attend la réponse avant de passer à la ligne suivante
             const response = await eventsServices.getById(id)
+            // On repart de "je ne participe pas" (utile après une désinscription)
+            setIsParticipe(false)
+            // On parcourt la liste des participants un par un :
+            // index = 0, puis 1, puis 2... tant qu'on n'a pas atteint la fin de la liste
+            for (let index = 0; index < response.data.participants.length; index++) {
+                const element = response.data.participants[index];
+                // Si ce participant, c'est moi => je participe !
+                if (element.us_id === user.us_id) {
+                    setIsParticipe(true);
+                }
+            }
+
+            /*
+             * Forme attendue, simplifiée :
+             *   {
+             *     ev_title, ev_date, ev_location, ev_description,
+             *     participants: [{ us_id, us_username }],
+             *     comments: [{ co_id, co_comment }]
+             *   }
+             */
             // On range l'événement reçu dans "event" : la page se met à jour toute seule
             setEvent(response.data)
             // ... catch = "si ça plante, fais plutôt ça"
         } catch (error) {
             // On affiche l'erreur dans la console pour comprendre ce qui n'a pas marché
-            console.error("Erreur lors de la récupération de l'événement :", error);
+            console.error(error);
+            // Et un message clair pour l'utilisateur
+            setError("Cet événement est introuvable ou le service est indisponible.");
+        } finally {
+            // finally = "dans TOUS les cas (réussite ou erreur)" : on n'attend plus
+            setLoading(false);
         }
     };
     // Inscrit l'utilisateur connecté à cet événement
@@ -75,8 +110,35 @@ const EventPage = () => {
         try {
             await participantsServices.deleteParticipant(id)
             fetchEventById()
-        } catch (error){
+        } catch (error) {
             console.error("Erreur lors de la désincription", error)
+        }
+    }
+
+    const handleChange = (e) => {
+        // name = le nom du champ modifié, value = ce qui est écrit dedans
+        const { name, value } = e.target;
+        // "...changePassword" recopie les anciennes valeurs, puis on remplace seulement le champ modifié
+        setNewComment({ ...newComment, [name]: value })
+    }
+
+    // Appelée quand on envoie le formulaire du commentaire
+    const handleSubmit = async (e) => {
+        // Empêche la page de se recharger
+        e.preventDefault();
+        try {
+            // L'objet attendu par le back : { comment, event }
+            const comment = {
+                comment: newComment.comment,  // le texte tapé
+                event: id                // l'id de l'événement (dans l'URL)
+            }
+            await commentsServices.insertComment(comment)
+            // On vide le formulaire
+            setNewComment({ comment: "" })
+            // On recharge l'événement pour voir le nouveau commentaire
+            fetchEventById()
+        } catch (error) {
+            console.error(error)
         }
     }
 
@@ -87,7 +149,22 @@ const EventPage = () => {
         fetchEventById();
     }, [id]);
 
-    // Rendu JSX : ce qui s'affiche à l'écran
+    // CONDITION 1 : on attend encore le back => un rond de chargement
+    if (loading) {
+        return <CircularProgress />
+    }
+
+    // CONDITION 2 : ça a planté => le message d'erreur (+ bouton retour)
+    if (error) {
+        return <>
+            <Button startIcon={<ArrowBackIcon />} onClick={() => navigate("/events")} sx={{ mb: 2 }}>
+                Retour aux événements
+            </Button>
+            <Alert severity="error">{error}</Alert>
+        </>
+    }
+
+    // Rendu JSX : ce qui s'affiche à l'écran (ici, on est sûr que "event" existe)
     return <>
         {/* Bouton pour revenir à la liste des événements */}
         <Button startIcon={<ArrowBackIcon />} onClick={() => navigate("/events")} sx={{ mb: 2 }}>
@@ -131,14 +208,14 @@ const EventPage = () => {
                 {/* CONDITION : on affiche le nombre de participants seulement s'il y a la liste */}
                 Participants {event.participants && `(${event.participants.length})`}
             </Typography>
-            {isParticipant ? (
-           <Button onClick={unParticip} variant="outlined" color="error" sx={{ mb: 2 }}>
-                Se désinscrire 
-            </Button>
+            {isParticipe ? (
+                <Button onClick={unParticip} variant="outlined" color="error" sx={{ mb: 2 }}>
+                    Se désinscrire
+                </Button>
             ) : (
-            <Button onClick={particip} variant="contained" color="primary" sx={{ mb: 2 }}>
-                Participer à cet événement
-            </Button>
+                <Button onClick={particip} variant="contained" color="primary" sx={{ mb: 2 }}>
+                    Participer à cet événement
+                </Button>
             )}
 
             {/* Box avec flexWrap : les participants passent à la ligne s'il n'y a plus de place */}
@@ -178,6 +255,17 @@ const EventPage = () => {
                     </ListItem>
                 })}
             </List>
+            {/* Formulaire pour ajouter un commentaire */}
+            <form onSubmit={handleSubmit}>
+                <textarea
+                    name="comment"
+                    value={newComment.comment}
+                    onChange={handleChange}
+                    placeholder="Écris ton commentaire..."
+                />
+                <button type="submit">Envoyer</button>
+            </form>
+
         </Paper>
     </>
 }

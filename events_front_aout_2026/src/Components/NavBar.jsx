@@ -32,7 +32,7 @@ function NavBar() {
   // navigate sert à changer de page
   const navigate = useNavigate();
   // On lit dans le Context si l'utilisateur est connecté (true) ou pas (false)
-  const { isConnected, setIsConnected } = useContext(AuthContext);
+  const { isConnected, setIsConnected, setUser } = useContext(AuthContext);
   // Ouvre le menu mobile (☰)
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -63,6 +63,8 @@ function NavBar() {
     localStorage.removeItem("token");
     // On met à jour le Context pour dire que l'utilisateur n'est plus connecté
     setIsConnected(false);
+    // Plus personne n'est connecté
+    setUser(null);
     // On redirige vers la page d'accueil
     navigate("/");
   }

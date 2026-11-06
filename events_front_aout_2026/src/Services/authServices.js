@@ -30,10 +30,25 @@ function isConnected() {
     return false;
 }
 
+// Renvoie l'utilisateur connecté (lu dans le token), ou null si personne n'est connecté
+function getUser(){
+    // On vérifie d'abord qu'un token valide existe (sinon jwtDecode planterait)
+    if(isConnected()){
+        const token = window.localStorage.getItem("token");
+        // On ouvre le token pour lire ce qu'il contient
+        const decoded = jwtDecode(token);
+        // L'utilisateur est rangé dans "user" (us_id, us_username, us_email...)
+        return decoded.user;
+    }
+    // Personne n'est connecté
+    return null;
+}
+
 // On exporte les fonctions pour les utiliser dans LoginPage et RegisterPage
 // Exemple : authServices.login(user)
 export default {
     login,
     register,
     isConnected,
+    getUser,
 }

@@ -24,10 +24,12 @@ import AuthWrapper from './Wrappers/AuthWrapper'
 // Composant principal : c'est lui qui décide quelle page afficher selon l'URL
 function App() {
   const [isConnected, setIsConnected] = useState(authServices.isConnected());
+  // L'utilisateur connecté (lu dans le token), ou null si personne n'est connecté
+  const [user, setUser] = useState(authServices.getUser());
   return (
 
-    
-    <AuthContext.Provider value={{ isConnected, setIsConnected }}>
+
+    <AuthContext.Provider value={{ isConnected, setIsConnected, user, setUser }}>
       <BrowserRouter>
         {/* La NavBar est en dehors de <Routes> : elle s'affiche donc sur TOUTES les pages */}
         <NavBar />

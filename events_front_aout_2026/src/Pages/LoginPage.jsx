@@ -20,7 +20,9 @@ const LoginPage = () => {
 
     const [feedback, setFeedback] = useState(null)
     const navigate = useNavigate();
-    const { setIsConnected } = useContext(AuthContext);
+    // "setUser: setConnectedUser" = on renomme setUser du Context, car "setUser" existe déjà
+    // dans cette page (pour le formulaire de connexion)
+    const { setIsConnected, setUser: setConnectedUser } = useContext(AuthContext);
     // TRAITEMENTS
     // Appelée à CHAQUE lettre tapée dans un champ du formulaire
     // "e" (l'événement) contient des infos sur le champ qui a changé
@@ -48,6 +50,8 @@ const LoginPage = () => {
             axios.defaults.headers["Authorization"] = "Bearer " + token;
             // On met à jour l'état de connexion
             setIsConnected(true);
+            // On range aussi l'utilisateur connecté dans le Context (lu dans le nouveau token)
+            setConnectedUser(authServices.getUser());
             // On affiche un message de réussite
             setFeedback("Connexion réussie ! Redirection vers la page d'accueil...");
             // On redirige vers la page d'accueil après 1,5 seconde (1500 millisecondes)

@@ -29,7 +29,7 @@ async function update(req, res) {
             return res.status(404).json({ error: "Le comment n'existe pas !" })
         }
 
-        if(body.comment){
+        if (body.comment) {
             comment.co_comment = body.comment;
         }
         const updated = await commentModel.update(id, comment);
@@ -40,12 +40,17 @@ async function update(req, res) {
 }
 async function insert(req, res) {
     try {
-        const body = req.body;
-        if (!body.comment) {
-            res.status(403).json({ error: "Le commentaire est obligatoire" })
+        const comment = {
+            comment: req.body.comment,
+            user: req.user.us_id,
+            event: req.body.event
         }
-        const inserted = await commentModel.insert(body);
-        res.status(201).json({ message: "Votre insertion à bien été effectué", comment: body });
+        if (!comment.comment){
+            return res.status(403).json({error: "Veuillez écrire un commentaire"})
+        }
+        const inserted = await commentModel.insert(comment);
+        res.status(201).json({ message: "Votre insertion à bien été effectué", comment: comment });
+
     } catch (error) {
         res.status(500).json({ error: "Une erreur est survenue lors de l'insertion du comment !" })
     }
@@ -58,7 +63,7 @@ async function deleteComment(req, res) {
             return res.status(404).json({ error: "Le comment n'existe pas !" })
         }
         const deleted = await commentModel.deleteComment(id);
-        res.json({message : "Votre suppression à bien été effectué", comment});
+        res.json({ message: "Votre suppression à bien été effectué", comment });
     } catch (error) {
         res.status(500).json({ error: "Une erreur est survenue lors de la suppression du comment !" })
     }
