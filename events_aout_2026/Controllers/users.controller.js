@@ -50,7 +50,7 @@ async function getByUserId(req, res) {
 // Modifie un utilisateur (route PATCH /users/12)
 async function update(req, res) {
     try {
-        const id = req.params.id;
+        const id = req.user.us_id;
         // req.body = les données envoyées par le front (ex : { email: "nouveau@mail.com" })
         const body = req.body;
         // On récupère d'abord l'utilisateur actuel
@@ -120,9 +120,12 @@ async function deleteUser(req, res) {
 // C'est le back qui sait qui demande, grâce au token => impossible de voir le profil d'un autre
 async function getMe(req, res) {
     try {
-        // req.user a été rempli par le videur (checkToken dans auth.middleware.js)
-        // Il contient l'utilisateur rangé dans le token : us_id, us_username, us_email...
-        const userConnected = req.user; // Récupère l'utilisateur connecté depuis le middleware d'authentification
+        // req.user a été rempli par le videur (checkToken) : c'est la "photo" du token, prise à la connexion.
+        // On s'en sert SEULEMENT pour l'id, et on va chercher les infos À JOUR dans la base de données
+        // (sinon, après une modification du pseudo/email, on renverrait les anciennes valeurs du token)
+        const userConnected = await userModel.getById(req.user.us_id);
+        // On ne renvoie JAMAIS le mot de passe (même chiffré) au front 🔐
+        delete userConnected.us_password;
         // Je vais chercher tous les événements où ce user participe (grâce à son id)
         const events = await eventModel.getByUserId(userConnected.us_id);
         // Je vais chercher tout les commentaire écrit par ce user

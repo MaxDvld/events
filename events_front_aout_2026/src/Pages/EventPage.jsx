@@ -77,7 +77,7 @@ const EventPage = () => {
              *   {
              *     ev_title, ev_date, ev_location, ev_description,
              *     participants: [{ us_id, us_username }],
-             *     comments: [{ co_id, co_comment }]
+             *     comments: [{ co_id, co_comment, us_username }]
              *   }
              */
             // On range l'événement reçu dans "event" : la page se met à jour toute seule
@@ -254,7 +254,8 @@ const EventPage = () => {
                 {event.comments && event.comments.map((comment) => {
                     return <ListItem key={comment.co_id} sx={{ bgcolor: "grey.100", borderRadius: 2, mb: 1 }}>
                         {/* ListItemText = le texte d'une ligne de la liste */}
-                        <ListItemText primary={comment.co_comment} />
+                        {/* primary = le texte principal, secondary = la petite ligne grise en dessous (le pseudo) */}
+                        <ListItemText primary={comment.co_comment} secondary={"par " + comment.us_username} />
                     </ListItem>
                 })}
             </List>

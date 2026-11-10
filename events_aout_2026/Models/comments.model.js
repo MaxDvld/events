@@ -38,13 +38,15 @@ async function getByUserId(userId) {
 
 // Pour récupérer tout les commentaires associé a un evenement en particulier
 async function getByEventId(eventId) {
-    // JE SELECTIONNE co_comment, co_id, co_user
+    // JE SELECTIONNE co_comment, co_id, co_user ET us_username (le pseudo de l'auteur)
     // DEPUIS LA TABLE COMMENTS
-    // JE JOINS LA TABLE EVENTS 
+    // JE JOINS LA TABLE EVENTS
+    // JE JOINS LA TABLE USERS (pour récupérer le pseudo de celui qui a écrit le commentaire)
     // OU ev_id = ?
-    const [rows] = await Db.query(`SELECT co_comment, co_id, co_user
-        FROM comments 
-        INNER JOIN events ON events.ev_id = comments.co_event 
+    const [rows] = await Db.query(`SELECT co_comment, co_id, co_user, us_username
+        FROM comments
+        INNER JOIN events ON events.ev_id = comments.co_event
+        INNER JOIN users ON users.us_id = comments.co_user
         WHERE ev_id = ?`, [eventId]);
     return rows;
 }

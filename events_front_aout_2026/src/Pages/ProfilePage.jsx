@@ -16,15 +16,40 @@ const ProfilePage = () => {
         new_password: "",
         confirm_password: ""
     });
+    const [showModal, setShowModal] = useState(false)
+    const [editUser, setEditUser] = useState({
+        username: "",
+        email: ""
+    })
 
     // TRAITEMENTS
     // Appelée à CHAQUE lettre tapée dans un champ du formulaire de mot de passe
     const handleChange = (e) => {
         // name = le nom du champ modifié, value = ce qui est écrit dedans
-        const {name, value} = e.target;
+        const { name, value } = e.target;
         // "...changePassword" recopie les anciennes valeurs, puis on remplace seulement le champ modifié
-        setChangePassword({...changePassword, [name] : value})
+        setChangePassword({ ...changePassword, [name]: value })
     }
+
+    const handleEditUser = (e) => {
+        const { name, value } = e.target
+        setEditUser({ ...editUser, [name]: value })
+    }
+
+    // Envoie le nouveau pseudo / email au back
+    const handleUpdateUser = async () => {
+        try {
+            // 1. On envoie la boîte de la modale au back
+            const response = await usersServices.updateMe (editUser)
+                // 2. On ferme la modale
+                setShowModal(false)
+        // 3. On recharge le profil pour voir les nouvelles infos
+        fetchMe()
+    } catch (error) {
+            console.error(error)
+        }
+    }
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -54,6 +79,15 @@ const ProfilePage = () => {
     return <>
         <h1> {user.us_username} </h1>
         <h2> {user.us_email}</h2>
+
+        {/* Au clic : on pré-remplit le formulaire avec les infos actuelles, PUIS on ouvre la modale */}
+        <button type="button" className="btn btn-primary" onClick={() => {
+            setEditUser({ username: user.us_username, email: user.us_email });
+            setShowModal(true);
+        }}>
+            Modifier mon profil
+        </button>
+
         <h3>Commentaires</h3>
         {/* CONDITION "? :" = "s'il y a des commentaires ? alors la liste : sinon un message" */}
         {user.comments && user.comments.length > 0 ? user.comments.map((comment) => {
@@ -108,6 +142,32 @@ const ProfilePage = () => {
                 </Stack>
             </Box>
         </Paper>
+        {showModal && (
+            <div className="modal d-block" tabIndex="-1" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h5 className="modal-title">Modifier mon profil</h5>
+                            <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowModal(false)}></button>
+                        </div>
+                        <div className="modal-body">
+                            <label htmlFor="username" className="form-label">Pseudo</label>
+                            <input type="text" className="form-control mb-3" id="username"
+                                name="username" value={editUser.username} onChange={handleEditUser} />
+
+                            <label htmlFor="email" className="form-label">Email</label>
+                            <input type="email" className="form-control" id="email"
+                                name="email" value={editUser.email} onChange={handleEditUser} />
+
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Annuler</button>
+                            <button type="button" className="btn btn-primary" onClick={handleUpdateUser}>Enregistrer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
     </>;
 }
 

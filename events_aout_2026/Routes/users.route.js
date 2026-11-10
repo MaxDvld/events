@@ -21,8 +21,8 @@ router.get("/:id", userController.getByUserId);
 
 router.patch("/resetPassword", userController.resetPassword);
 
-// PATCH /users/12 => modifier l'utilisateur n°12
-router.patch("/:id", userController.update);
+// PATCH /users/me => modifier MON profil (l'utilisateur connecté)
+router.patch("/me", userController.update);
 
 // POST /users => créer un nouvel utilisateur
 router.post("/", userController.insert);
