@@ -1,109 +1,145 @@
-// useState : permet de stocker des données qui peuvent changer (ici ce que l'utilisateur tape)
-// useContext : permet de lire le Context (l'info partagée entre toutes les pages)
+/*
+ * Formulaire de connexion.
+ * Les champs sont "contrôlés" : leur texte vit dans le state React,
+ * pas seulement dans le HTML.
+ *
+ * Exemple, après avoir tapé "lea" dans Identifiant :
+ *   user vaut { username: "lea", password: "" }
+ *   parce que handleChange recopie l'objet et remplace username.
+ */
 import { useContext, useState } from "react";
-// useNavigate : permet de changer de page depuis le code
+import { Alert, Box, Button, Paper, Stack, TextField, Typography } from "@mui/material";
 import { useNavigate } from "react-router";
-// Le service qui envoie les demandes de connexion/inscription au back
 import authServices from "../Services/authServices";
-// Le Context qui contient l'info "connecté ou pas"
+// ⚠️ Chez toi, le dossier s'appelle "Context" (sans s)
 import AuthContext from "../Context/AuthContext";
 import axios from "axios";
-// Page de connexion, affichée sur l'adresse "/login"
+
 const LoginPage = () => {
     // VARIABLES
-    // "user" contient ce que l'utilisateur tape dans le formulaire (vide au départ)
-    // "setUser" sert à le mettre à jour
+    // user : ce qui sera envoyé à l'API. feedback : message succès ou erreur, ou null si rien à dire.
     const [user, setUser] = useState({
         username: "",
         password: ""
-    })
-
-    const [feedback, setFeedback] = useState(null)
+    });
+    const [feedback, setFeedback] = useState(null);
     const navigate = useNavigate();
+    // On prend setIsConnected dans le contexte. isConnected n'est pas utile sur cette page.
     // "setUser: setConnectedUser" = on renomme setUser du Context, car "setUser" existe déjà
-    // dans cette page (pour le formulaire de connexion)
+    // dans cette page (pour le formulaire). Il sert à ranger l'utilisateur connecté dans le Context
+    // (utilisé par EventPage pour savoir si on participe déjà).
     const { setIsConnected, setUser: setConnectedUser } = useContext(AuthContext);
-    // TRAITEMENTS
-    // Appelée à CHAQUE lettre tapée dans un champ du formulaire
-    // "e" (l'événement) contient des infos sur le champ qui a changé
-    const handleChange = (e) => {
-        // const name = e.target.name;
-        // const value = e.target.value;
-        // name = le nom du champ ("username" ou "password"), value = ce qui est écrit dedans
-        const {name, value} = e.target;
-        // "...user" recopie toutes les anciennes valeurs, puis on remplace seulement le champ modifié
-        setUser({...user, [name] : value})
-    }
 
-    // Appelée quand on clique sur "Se Connecter" (envoi du formulaire)
+    // TRAITEMENTS
+    /*
+     * À chaque frappe, le navigateur donne un événement e.
+     * e.target.name est l'attribut name du champ ("username" ou "password").
+     * e.target.value est le texte actuel.
+     *
+     * { ...user, [name]: value } copie user puis écrase une seule clé.
+     * Les crochets [name] utilisent la variable comme nom de propriété.
+     * Exemple : name = "password", value = "secret"
+     *   { username: "lea", password: "" } devient { username: "lea", password: "secret" }
+     * Sans les "...user", on perdrait l'autre champ.
+     */
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setUser({ ...user, [name]: value });
+    };
+
+    /*
+     * async permet d'utiliser await : on attend la réponse HTTP avant de continuer.
+     * try / catch : le code du try tourne normalement.
+     * Si axios reçoit une erreur (mauvais mot de passe, API éteinte), on saute dans le catch.
+     */
     const handleSubmit = async (e) => {
-        // Empêche le navigateur de recharger la page (comportement normal d'un formulaire)
+        // preventDefault empêche le navigateur de recharger la page, comportement par défaut d'un <form>.
         e.preventDefault();
+        setFeedback(null);
         try {
-            // On envoie le username et le mot de passe au back, et on attend sa réponse
             const response = await authServices.login(user);
-            // Si c'est bon, le back renvoie un token (le "badge" qui prouve qu'on est connecté)
+            // response.data est le JSON renvoyé par l'API. Exemple : { token: "eyJ..." }.
             const token = response.data.token;
-            // On range le token dans le navigateur (localStorage) pour le réutiliser plus tard
-            // (par exemple dans eventsServices pour voir les événements)
-            window.localStorage.setItem("token",token)
-            axios.defaults.headers["Authorization"] = "Bearer " + token;
-            // On met à jour l'état de connexion
+            /*
+             * localStorage garde une chaîne même après fermeture de l'onglet.
+             * Les autres pages relisent "token" pour l'en-tête Authorization.
+             * Ce n'est pas un cookie : c'est un petit stockage propre à ce site, dans le navigateur.
+             */
+            window.localStorage.setItem("token", token);
+            axios.defaults.headers.common["Authorization"] = "Bearer " + token;
+            navigate("/events");
+            // Prévenir la NavBar : elle va cacher Connexion / Inscription et montrer l'avatar.
             setIsConnected(true);
             // On range aussi l'utilisateur connecté dans le Context (lu dans le nouveau token)
             setConnectedUser(authServices.getUser());
-            // On affiche un message de réussite
-            setFeedback("Connexion réussie ! Redirection vers la page d'accueil...");
-            // On redirige vers la page d'accueil après 1,5 seconde (1500 millisecondes)
-            // pour laisser le temps de lire le message
-            setTimeout(() => {
-                navigate("/");
-            }, 1500);
+            setFeedback({ severity: "success", message: "Connexion réussie." });
         } catch (error) {
-            // Si ça échoue (mauvais mot de passe, back éteint...), on affiche l'erreur dans la console
             console.error(error);
-            // CONDITION : si le back a répondu, on affiche son message (ex : "Identifiants incorrect")
-            // Sinon (back éteint), error.response n'existe pas : on affiche un message général
-            if (error.response) {
-                setFeedback("Erreur de connexion : " + error.response.data.error);
-            } else {
-                setFeedback("Erreur de connexion : le serveur ne répond pas");
-            }
+            setFeedback({ severity: "error", message: "Identifiants incorrects ou service indisponible." });
         }
-    }
-
+    };
 
     // RENDU
-    return <>
-        {/* Les classes Bootstrap centrent la carte au milieu de la page */}
-        <div className="row justify-content-center">
-            <div className="col-md-6 col-lg-4">
-                <div className="card shadow-sm">
-                    <div className="card-body p-4">
-                        <h1 className="h3 mb-4 text-center">Connexion</h1>
-                        {/* CONDITION : s'il y a un message (feedback), on l'affiche dans un encadré */}
-                        {feedback && <div className="alert alert-info">{feedback}</div>}
-                        {/* onSubmit : lance handleSubmit quand on envoie le formulaire */}
-                        <form onSubmit={handleSubmit}>
-                            <div className="mb-3">
-                                <label htmlFor="username" className="form-label">Login</label>
-                                {/* name = quel champ de "user" modifier, value = ce qui est affiché, onChange = à chaque frappe */}
-                                <input type="text" className="form-control" name="username" id="username" value={user.username} onChange={handleChange}/>
-                            </div>
-                            <div className="mb-4">
-                                <label htmlFor="password" className="form-label">Mot de passe</label>
-                                {/* type="password" cache les caractères tapés */}
-                                <input type="password" className="form-control" id="password" name="password" value={user.password} onChange={handleChange}/>
-                            </div>
-                            {/* type="submit" : cliquer ce bouton envoie le formulaire */}
-                            <button type="submit" className="btn btn-primary w-100">Se Connecter</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </>;
-}
+    return (
+        <Box sx={{ minHeight: "74vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {/* component="form" transforme le Paper en balise <form>, donc Entrée déclenche onSubmit. */}
+            <Paper component="form" onSubmit={handleSubmit} sx={{ width: "100%", maxWidth: 460, p: { xs: 3, md: 5 } }}>
+                <Stack spacing={3}>
+                    <Box>
+                        <Typography variant="overline" sx={{ color: "primary.light", letterSpacing: "0.22em" }}>
+                            Espace membre
+                        </Typography>
+                        <Typography variant="h3" component="h1">Connexion</Typography>
+                    </Box>
+                    {/*
+                      feedback && ... n'affiche l'alerte que si feedback n'est pas null.
+                      Exemple : feedback vaut null au début, donc rien.
+                      Après une erreur, feedback vaut { severity: "error", message: "..." }, donc l'alerte apparaît.
+                    */}
+                    {feedback && <Alert severity={feedback.severity}>{feedback.message}</Alert>}
+                    {/*
+                      value={user.username} affiche le state.
+                      onChange={handleChange} met le state à jour.
+                      Les deux ensemble font un champ contrôlé : React est la source du texte.
+                      required empêche l'envoi si le champ est vide (vérification du navigateur).
+                    */}
+                    <TextField
+                        label="Identifiant"
+                        name="username"
+                        id="username"
+                        value={user.username}
+                        onChange={handleChange}
+                        fullWidth
+                        required
+                    />
+                    <TextField
+                        label="Mot de passe"
+                        type="password"
+                        id="password"
+                        name="password"
+                        value={user.password}
+                        onChange={handleChange}
+                        fullWidth
+                        required
+                    />
+                    <Button type="submit" variant="contained" size="large">
+                        Se connecter
+                    </Button>
+                    {/*
+                      type="button" est INDISPENSABLE ici : ce bouton est DANS le formulaire.
+                      Sans lui, un bouton est "submit" par défaut => cliquer dessus enverrait le formulaire de connexion !
+                    */}
+                    <Button type="button" variant="text" onClick={() => navigate("/forgot-password")}>
+                        Mot de passe oublié ?
+                    </Button>
+                    <Stack direction="row" spacing={1}>
+                        <Button variant="text" onClick={() => navigate("/")}>Accueil</Button>
+                        <Button variant="text" onClick={() => navigate("/register")}>Créer un compte</Button>
+                    </Stack>
+                </Stack>
+            </Paper>
+        </Box>
+    );
+};
 
-// On exporte la page pour l'utiliser dans App.jsx
 export default LoginPage;

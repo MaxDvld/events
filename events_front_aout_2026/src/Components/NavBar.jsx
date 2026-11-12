@@ -19,7 +19,6 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import AuthContext from '../Context/AuthContext';
-
 // Les choix du petit menu qui s'ouvre au clic sur l'avatar (à droite)
 // const settings = ['Mon profil', 'Mes événements', 'Déconnexion'];
 
@@ -145,6 +144,9 @@ function NavBar() {
                 <MenuItem onClick={() => goTo("/events")}>
                   <Typography sx={{ textAlign: 'center' }}>Événements</Typography>
                 </MenuItem>
+                <MenuItem onClick={() => goTo("/calendar")}>
+                  <Typography sx={{ textAlign: 'center' }}>Calendrier</Typography>
+                </MenuItem>
                 <MenuItem onClick={() => goTo("/my-events")}>
                   <Typography sx={{ textAlign: 'center' }}>Mes événements</Typography>
                 </MenuItem>
@@ -198,6 +200,9 @@ function NavBar() {
               </Button>
               <Button onClick={() => navigate("/events")} sx={{ my: 2, color: 'white', display: 'block' }}>
                 Événements
+              </Button>
+              <Button onClick={() => navigate("/calendar")} sx={{ my: 2, color: 'white', display: 'block' }}>
+                Calendrier
               </Button>
               <Button onClick={() => navigate("/my-events")} sx={{ my: 2, color: 'white', display: 'block' }}>
                 Mes événements

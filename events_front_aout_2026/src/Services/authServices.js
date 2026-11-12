@@ -1,54 +1,82 @@
-// axios : outil qui permet au front d'envoyer des requêtes au back (comme Postman, mais dans le code)
+/*
+ * Appels HTTP liés au compte : connexion, inscription, mot de passe oublié.
+ * axios envoie une requête et renvoie une promesse.
+ * Le composant qui appelle login() doit donc utiliser await (ou .then).
+ *
+ * Exemple de corps envoyé à /auth/login :
+ *   { "username": "lea", "password": "secret" }
+ * Réponse typique :
+ *   { "token": "eyJhbGciOi..." }
+ * Ce token est ensuite stocké dans le navigateur (voir LoginPage).
+ *
+ * ⚠️ Chez toi, API_URL vaut "http://127.0.0.1:3000" SANS "/" à la fin (voir url.js).
+ * Il faut donc écrire "/auth/login" (avec le "/" devant), sinon l'adresse devient
+ * "http://127.0.0.1:3000auth/login" et la requête échoue.
+ */
 import axios from "axios";
+import { jwtDecode } from 'jwt-decode'
 // API_URL : l'adresse du back, écrite une seule fois dans url.js
 import { API_URL } from "./url";
-import {jwtDecode} from "jwt-decode";
 
-// Envoie le username et le mot de passe au back pour se connecter
-// Requête POST (= on envoie des données) sur /auth/login
-// Si c'est bon, le back répond avec un token
+
+// POST crée une ressource ou déclenche une action. Ici : ouvrir une session.
 function login(user) {
     return axios.post(API_URL + "/auth/login", user)
 }
 
-// Envoie les infos du formulaire d'inscription au back pour créer un compte
-// Requête POST sur /auth/register
+// Le 2e argument de axios.post est le JSON envoyé dans le corps de la requête.
 function register(user) {
     return axios.post(API_URL + "/auth/register", user)
 }
 
+// Connecté ou pas ? On regarde s'il existe un token ET s'il n'est pas expiré.
+// Au passage, on règle (ou on vide) l'en-tête Authorization envoyé automatiquement par axios.
 function isConnected() {
     const token = window.localStorage.getItem("token");
     if (token) {
-        const decodedToken = jwtDecode(token)
-        if (decodedToken.exp > Date.now() / 1000) {
+        const decoded = jwtDecode(token);
+        // exp = date d'expiration du token (en secondes) ; Date.now() est en millisecondes, d'où le / 1000
+        if (decoded.exp > Date.now() / 1000) {
             axios.defaults.headers.common["Authorization"] = "Bearer " + token;
-        return true;
-    } 
-}
-    axios.defaults.headers.common["Authorization"] = "";
+            return true
+        }
+    }
+    axios.defaults.headers.common["Authorization"] = ""
     return false;
 }
 
 // Renvoie l'utilisateur connecté (lu dans le token), ou null si personne n'est connecté
 function getUser(){
-    // On vérifie d'abord qu'un token valide existe (sinon jwtDecode planterait)
     if(isConnected()){
         const token = window.localStorage.getItem("token");
-        // On ouvre le token pour lire ce qu'il contient
         const decoded = jwtDecode(token);
-        // L'utilisateur est rangé dans "user" (us_id, us_username, us_email...)
         return decoded.user;
     }
-    // Personne n'est connecté
     return null;
 }
 
-// On exporte les fonctions pour les utiliser dans LoginPage et RegisterPage
-// Exemple : authServices.login(user)
+// Mot de passe oublié : demande au back d'envoyer un email avec un lien de réinitialisation.
+// Le back attend { mail: "..." } (il lit req.body.mail)
+function forgotPassword(mail) {
+    return axios.post(API_URL + "/auth/forgot-password", { mail })
+}
+
+// Réinitialisation : envoie le code secret (du lien de l'email) + le nouveau mot de passe.
+// Le back attend { resetToken, newPassword }
+function resetPassword(resetToken, newPassword) {
+    return axios.post(API_URL + "/auth/reset-password", { resetToken, newPassword })
+}
+
+/*
+ * On exporte un objet pour écrire authServices.login(user).
+ * Équivalent plus long :
+ *   import { login } from "..."   si on avait écrit export function login
+ */
 export default {
     login,
     register,
     isConnected,
     getUser,
+    forgotPassword,
+    resetPassword
 }

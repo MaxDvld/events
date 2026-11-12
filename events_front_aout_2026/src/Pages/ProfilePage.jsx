@@ -21,6 +21,7 @@ const ProfilePage = () => {
         username: "",
         email: ""
     })
+    const [showPasswordModal, setShowPasswordModal] = useState(false)
 
     // TRAITEMENTS
     // Appelée à CHAQUE lettre tapée dans un champ du formulaire de mot de passe

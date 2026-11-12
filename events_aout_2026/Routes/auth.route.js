@@ -1,10 +1,42 @@
+/*
+ * Routes/auth.route.js — URLs publiques d'authentification
+ * ---------------------------------------------------------
+ * Un Router Express est un mini-groupe de routes.
+ * Dans index.js il est branché sur "/auth", donc les chemins ici
+ * se collent après ce préfixe :
+ *
+ *   router.post('/register', ...)        →  POST /auth/register
+ *   router.post('/login', ...)           →  POST /auth/login
+ *   router.post('/forgot-password', ...) →  POST /auth/forgot-password
+ *   router.post('/reset-password', ...)  →  POST /auth/reset-password
+ *
+ * Ces routes ne passent PAS par checkToken :
+ * on ne possède pas encore de token au moment de s'inscrire, de se connecter,
+ * ou quand on a oublié son mot de passe.
+ *
+ * Le verbe HTTP compte :
+ *   POST sert à envoyer des données (le JSON du formulaire).
+ *   Un GET /auth/login ne matcherait aucune ligne ci-dessous.
+ */
+
+// "e" est simplement Express. On aurait pu écrire : import express from "express"
 import e from "express";
 import authController from '../Controllers/auth.contoller.js'
 
+// Crée un routeur vide, puis on y ajoute les routes une par une.
 const router = e.Router();
 
+// Quand une requête POST arrive sur /register, Express appelle authController.register
 router.post('/register', authController.register);
 
 router.post('/login', authController.login);
 
+// route pour réinitialiser le mot de passe
+// (reçoit le code secret du lien de l'email + le nouveau mot de passe)
+router.post('/reset-password', authController.resetPassword);
+
+// route pour oublier le mot de passe ( route qui envoie un mail pour réinitialiser le mot de passe)
+router.post('/forgot-password', authController.forgotPassword);
+
+// index.js importe ce router : import authRoutes from './Routes/auth.route.js'
 export default router;

@@ -12,7 +12,10 @@ CREATE TABLE users (
 us_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 us_username VARCHAR(255) NOT NULL UNIQUE,
 us_password TEXT NOT NULL,
-us_email VARCHAR(255) NOT NULL UNIQUE)
+us_email VARCHAR(255) NOT NULL UNIQUE,
+-- Mot de passe oublié : le jeton secret envoyé par email, et sa date d'expiration
+us_reset_token VARCHAR(255) NULL,
+us_reset_expires DATETIME NULL)
 ENGINE=InnoDB;
 
 CREATE TABLE events(
